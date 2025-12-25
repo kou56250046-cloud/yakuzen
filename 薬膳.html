@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>薬膳アプリ（チェック → 食材提案）</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --panel:#ffffff;
+      --muted:#6b7280;
+      --text:#0f172a;
+      --border:#e5e7eb;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --shadow-sm: 0 6px 16px rgba(15, 23, 42, 0.08);
+
+      --primary:#2563eb;
+      --primary-weak: rgba(37,99,235,.12);
+
+      --radius:16px;
+      --font: system-ui, -apple-system, "Noto Sans JP", "Meiryo", sans-serif;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:var(--font);
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(37,99,235,.10), transparent 60%),
+                  radial-gradient(900px 500px at 100% 10%, rgba(99,102,241,.10), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+
+    /* Layout */
+    .app{ display:grid; grid-template-columns: 260px 1fr; min-height:100vh; }
+    @media (max-width: 980px){ .app{ grid-template-columns:1fr; } .sidebar{ position:sticky; top:0; z-index:5; } }
+
+    .sidebar{
+      background: rgba(255,255,255,.75);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid var(--border);
+      padding: 18px 14px;
+    }
+    .brand{ display:flex; gap:10px; align-items:center; padding: 10px 10px 14px; }
+    .logo{ width:36px; height:36px; border-radius:12px; background: linear-gradient(135deg, var(--primary), #22c55e); box-shadow: var(--shadow-sm); }
+    .brand h1{ font-size:16px; margin:0; letter-spacing:.2px; }
+    .brand p{ margin:2px 0 0; font-size:12px; color:var(--muted); }
+
+    .nav{ margin-top: 8px; display:grid; gap:6px; padding: 0 6px; }
+    .nav .item{ display:flex; gap:10px; align-items:center; padding:10px 10px; border-radius: 12px; border: 1px solid transparent; cursor:pointer; user-select:none; }
+    .nav .item.active{ background: var(--primary-weak); border-color: rgba(37,99,235,.22); }
+    .nav .dot{ width:10px; height:10px; border-radius:999px; background: #cbd5e1; }
+    .nav .item.active .dot{ background: var(--primary); }
+    .nav span{ font-size:13px; color:#111827; }
+
+    .help{ margin-top: 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 14px; background: rgba(255,255,255,.9); }
+    .help .t{ font-size:12px; color:var(--muted); line-height:1.5; }
+
+    .main{ padding: 18px 18px 28px; }
+    .topbar{ display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 14px; }
+    .topbar .title h2{ margin:0; font-size:18px; }
+    .topbar .title p{ margin:4px 0 0; font-size:12px; color:var(--muted); }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    /* Buttons / Inputs */
+    .btn{
+      border: 1px solid var(--border);
+      background: #fff;
+      color: #111827;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+    }
+    .btn.primary{
+      background: var(--primary);
+      color:#fff;
+      border-color: rgba(37,99,235,.35);
+      box-shadow: 0 10px 18px rgba(37,99,235,.18);
+    }
+
+    .field{
+      display:flex; gap:8px; align-items:center;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,.9);
+    }
+    .field label{ font-size:12px; color:var(--muted); }
+    select{ border:0; background: transparent; font-weight:700; color:#111827; outline:none; cursor:pointer; }
+
+    /* Content grid */
+    .grid{ display:grid; grid-template-columns: 1.25fr .75fr; gap: 14px; }
+    @media (max-width: 980px){ .grid{ grid-template-columns:1fr; } }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .card h3{ margin: 0 0 10px; font-size:14px; }
+    .muted{ color: var(--muted); }
+
+    /* Question groups */
+    .q-groups{ display:grid; gap:10px; }
+    .group{ border: 1px solid var(--border); border-radius: 14px; overflow:hidden; background: #fff; }
+    .group > button{
+      width:100%; text-align:left; padding: 12px 12px; border:0; background: #fff;
+      cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:800;
+    }
+    .group > button span{ font-size:13px; }
+    .group > button small{ color: var(--muted); font-weight:700; }
+    .items{ padding: 10px 12px 12px; display:grid; gap: 10px; background: #fbfcff; border-top: 1px solid var(--border); }
+    .q-item{ display:flex; gap:10px; align-items:flex-start; padding: 10px 10px; border: 1px solid var(--border); border-radius: 14px; background: #fff; }
+    .q-item input{ margin-top:3px; }
+    .q-item .meta{ font-size:12px; color: var(--muted); margin-top:4px; }
+
+    /* Lists */
+    .list{ display:grid; gap:10px; }
+
+    /* 全体の枠（カテゴリブロック） */
+    .line{
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background:#fff;
+    }
+
+    /* 食材カード（温度で薄色付け） */
+    .ing-card{
+      margin-top:10px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .between{ justify-content:space-between; }
+
+    /* ==========
+       マーク（色つき）
+       ========== */
+    .marks{ margin-top:8px; display:flex; flex-wrap:wrap; gap:8px; }
+
+    .pill{
+      display:inline-flex; align-items:center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.2;
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .pill.score{
+      background: rgba(37,99,235,.10);
+      border-color: rgba(37,99,235,.22);
+      color: #1d4ed8;
+    }
+    .pill.warn{
+      background: rgba(245,158,11,.12);
+      border-color: rgba(245,158,11,.26);
+      color: #92400e;
+    }
+
+    /* 温度 */
+    .t-寒{ background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.28); color:#1d4ed8; }
+    .t-涼{ background: rgba(14,165,233,.12); border-color: rgba(14,165,233,.28); color:#0369a1; }
+    .t-平{ background: rgba(107,114,128,.10); border-color: rgba(107,114,128,.24); color:#374151; }
+    .t-温{ background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.26); color:#92400e; }
+    .t-熱{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.26); color:#b91c1c; }
+
+    /* 五味 */
+    .s-酸{ background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.26); color:#15803d; }
+    .s-苦{ background: rgba(168,85,247,.12); border-color: rgba(168,85,247,.26); color:#6b21a8; }
+    .s-辛{ background: rgba(244,63,94,.12); border-color: rgba(244,63,94,.26); color:#be123c; }
+    .s-甘{ background: rgba(234,179,8,.14); border-color: rgba(234,179,8,.30); color:#854d0e; }
+    .s-鹹{ background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.26); color:#3730a3; }
+
+    /* 温度に応じた薄色（カード背景） */
+    .bg-寒{ background: linear-gradient(0deg, rgba(59,130,246,.07), rgba(255,255,255,1) 60%); }
+    .bg-涼{ background: linear-gradient(0deg, rgba(14,165,233,.07), rgba(255,255,255,1) 60%); }
+    .bg-平{ background: linear-gradient(0deg, rgba(107,114,128,.06), rgba(255,255,255,1) 60%); }
+    .bg-温{ background: linear-gradient(0deg, rgba(245,158,11,.08), rgba(255,255,255,1) 60%); }
+    .bg-熱{ background: linear-gradient(0deg, rgba(239,68,68,.07), rgba(255,255,255,1) 60%); }
+
+    details{ margin-top:10px; }
+    pre{
+      margin: 8px 0 0;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fbfcff;
+      color: #374151;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 12px;
+    }
+    .footer-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; align-items:center; }
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>薬膳アプリ</h1>
+        <p>チェック → 食材提案</p>
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="item active"><div class="dot"></div><span>診断</span></div>
+      <div class="item"><div class="dot"></div><span>結果</span></div>
+      <div class="item"><div class="dot"></div><span>デバッグ</span></div>
+    </div>
+
+    <div class="help">
+      <div class="t">
+        CSV（questions / ingredients / purpose_ingredient_map）を読み込みます。<br>
+        ローカル直開きでは失敗する場合があります。<br>
+        GitHub Pages または Live Server を推奨します。
+      </div>
+    </div>
+  </aside>
+
+  <section class="main">
+    <div class="topbar">
+      <div class="title">
+        <h2>チェック項目</h2>
+        <p>該当する項目にチェックを入れて「提案する」を押してください。</p>
+      </div>
+      <div class="actions">
+        <button id="btnReload" class="btn">CSV再読み込み</button>
+        <button id="btnReset" class="btn">リセット</button>
+        <button id="btnRecommend" class="btn primary">提案する</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="row between" style="margin-bottom:10px;">
+          <div>
+            <h3 style="margin-bottom:4px;">体調チェック</h3>
+            <div id="loadStatus" class="muted">読み込み中…</div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>表示カテゴリ数</label>
+              <select id="topCategories">
+                <option value="6" selected>6</option>
+                <option value="9">9</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>カテゴリ別TopN</label>
+              <select id="topN">
+                <option value="3" selected>3</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>最低目的スコア</label>
+              <select id="minPurposeScore">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="questionGroups" class="q-groups"></div>
+
+        <div class="footer-actions">
+          <span id="uiStatus" class="muted"></span>
+        </div>
+      </div>
+
+      <aside class="card">
+        <h3>結果</h3>
+
+        <h3 style="margin-top:12px;">目的ベクトル Top</h3>
+        <div id="purposeTop" class="list"></div>
+
+        <h3 style="margin-top:12px;">カテゴリ別 Top</h3>
+        <div id="categoryTop" class="list"></div>
+
+        <details>
+          <summary>デバッグ</summary>
+          <pre id="debug"></pre>
+        </details>
+      </aside>
+    </div>
+  </section>
+</div>
+
+<script>
+/** =========================
+ *  CSVの配置パス
+ *  ========================= */
+const DATA = {
+  questions: "./questions.csv",
+  ingredients: "./ingredients.csv",
+  map: "./purpose_ingredient_map.csv",
+};
+
+let QUESTIONS = [];
+let INGREDIENTS = [];
+let MAP = [];
+let INGREDIENTS_BY_ID = new Map();
+
+const $ = (id) => document.getElementById(id);
+
+/** CSV（引用符対応） */
+function parseCSV(text){
+  const rows = [];
+  let row = [], cur = "", inQ = false;
+  for(let i=0;i<text.length;i++){
+    const ch = text[i], nx = text[i+1];
+    if(ch === '"'){
+      if(inQ && nx === '"'){ cur += '"'; i++; }
+      else inQ = !inQ;
+      continue;
+    }
+    if(!inQ && ch === ','){ row.push(cur); cur=""; continue; }
+    if(!inQ && (ch === '\n' || ch === '\r')){
+      if(ch === '\r' && nx === '\n') i++;
+      row.push(cur); cur="";
+      rows.push(row); row=[];
+      continue;
+    }
+    cur += ch;
+  }
+  row.push(cur); rows.push(row);
+  return rows.filter(r => r.some(c => String(c).trim() !== ""));
+}
+function rowsToObjects(rows){
+  const header = rows[0].map(h => h.trim());
+  return rows.slice(1).map(r => {
+    const o = {};
+    header.forEach((h,idx)=> o[h] = (r[idx] ?? "").trim());
+    return o;
+  });
+}
+async function loadCSV(url){
+  const res = await fetch(url, {cache:"no-store"});
+  if(!res.ok) throw new Error(`CSV load failed: ${url} (${res.status})`);
+  return await res.text();
+}
+function splitList(s){
+  if(!s) return [];
+  return String(s).split(/[,、]/).map(x=>x.trim()).filter(Boolean);
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s => (
+    s === "&" ? "&amp;" :
+    s === "<" ? "&lt;" :
+    s === ">" ? "&gt;" :
+    s === '"' ? "&quot;" : "&#39;"
+  ));
+}
+
+/** 文字→クラス */
+function tempClass(t){
+  const v = (t||"").trim();
+  if(["寒","涼","平","温","熱"].includes(v)) return `t-${v}`;
+  return "warn";
+}
+function tempBgClass(t){
+  const v = (t||"").trim();
+  if(["寒","涼","平","温","熱"].includes(v)) return `bg-${v}`;
+  return "";
+}
+function tasteClass(s){
+  const v = (s||"").trim();
+  if(["酸","苦","辛","甘","鹹"].includes(v)) return `s-${v}`;
+  return "";
+}
+function pill(text, cls=""){
+  return `<span class="pill ${cls}">${escapeHtml(text)}</span>`;
+}
+
+/** 温度・五味のマーク */
+function renderPropertyMarks(ing){
+  const temp = ing.temperature ? pill(ing.temperature, tempClass(ing.temperature)) : pill("温度?", "warn");
+  const tastes = splitList(ing.taste).length
+    ? splitList(ing.taste).map(t => pill(t, tasteClass(t))).join(" ")
+    : pill("五味?", "warn");
+  return `<div class="marks">${temp} ${tastes}</div>`;
+}
+
+/** ベクトル */
+function makePurposeId(organ, element, state){ return `P_${organ}_${element}_${state}`; }
+function buildPurposeVector(){
+  const vector = new Map();
+  const checkedQs = QUESTIONS.filter(q => q._checked);
+  for(const q of checkedQs){
+    const w = Number(q.weight || 1);
+    const pid = makePurposeId(q.organ, q.element, q.state);
+    vector.set(pid, (vector.get(pid)||0) + w);
+  }
+  return vector;
+}
+function purposeTopList(purposeVector, topK=10){
+  return [...purposeVector.entries()].sort((a,b)=>b[1]-a[1]).slice(0, topK);
+}
+function scoreIngredients(purposeVector, minPurposeScore=1){
+  const vEntries = [...purposeVector.entries()].filter(([,s]) => s >= minPurposeScore);
+  const agg = new Map();
+
+  for(const [pid, pScore] of vEntries){
+    const rows = MAP.filter(m => m.purpose_id === pid);
+    for(const m of rows){
+      const iid = m.ingredient_id;
+      const strength = Number(m.strength || 1);
+      const add = pScore * strength;
+      if(!agg.has(iid)) agg.set(iid, { score:0, contrib:[] });
+      const obj = agg.get(iid);
+      obj.score += add;
+      obj.contrib.push({
+        purpose_id: pid,
+        purpose_score: pScore,
+        strength,
+        add,
+        rationale: m.rationale || "",
+        priority: Number(m.priority || 999)
+      });
+    }
+  }
+
+  for(const [iid, obj] of agg.entries()){
+    const ing = INGREDIENTS_BY_ID.get(iid);
+    if(!ing) continue;
+    if(ing.role === "メイン") obj.score += 1;
+  }
+  return agg;
+}
+function rankByCategory(ingredientAgg, topN=3, topCategories=6){
+  const byCat = new Map();
+  for(const [iid, obj] of ingredientAgg.entries()){
+    const ing = INGREDIENTS_BY_ID.get(iid);
+    if(!ing) continue;
+    const cat = ing.category || "その他";
+    if(!byCat.has(cat)) byCat.set(cat, []);
+    byCat.get(cat).push({ ingredient: ing, ...obj });
+  }
+  const catResults = [];
+  for(const [cat, arr] of byCat.entries()){
+    arr.sort((a,b)=> b.score - a.score);
+    const top = arr.slice(0, topN).map((x, idx)=>({ rank: idx+1, ...x }));
+    catResults.push({ category: cat, items: top });
+  }
+  catResults.sort((a,b)=> (b.items[0]?.score||0) - (a.items[0]?.score||0));
+  return catResults.slice(0, topCategories);
+}
+
+/** UI */
+function renderQuestions(){
+  const groups = new Map();
+  for(const q of QUESTIONS){
+    const k = q.note || "その他";
+    if(!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(q);
+  }
+
+  const wrap = $("questionGroups");
+  wrap.innerHTML = "";
+
+  for(const [note, items] of groups.entries()){
+    const g = document.createElement("div");
+    g.className = "group";
+
+    const btn = document.createElement("button");
+    btn.innerHTML = `<span>${escapeHtml(note)}</span><small>${items.length}件</small>`;
+    btn.onclick = () => {
+      const el = g.querySelector(".items");
+      el.style.display = (el.style.display === "none") ? "grid" : "none";
+    };
+
+    const list = document.createElement("div");
+    list.className = "items";
+
+    for(const q of items){
+      const id = `q_${q.question_id}`;
+      const div = document.createElement("div");
+      div.className = "q-item";
+      div.innerHTML = `
+        <input type="checkbox" id="${escapeHtml(id)}">
+        <div>
+          <label for="${escapeHtml(id)}"><strong>${escapeHtml(q.question_text)}</strong></label>
+          <div class="meta">${escapeHtml(q.organ)} × ${escapeHtml(q.element)} × ${escapeHtml(q.state)} ｜ weight=${escapeHtml(q.weight || 1)}</div>
+        </div>
+      `;
+      list.appendChild(div);
+    }
+
+    g.appendChild(btn);
+    g.appendChild(list);
+    wrap.appendChild(g);
+  }
+}
+function syncChecked(){
+  for(const q of QUESTIONS){
+    const el = document.getElementById(`q_${q.question_id}`);
+    q._checked = !!el?.checked;
+  }
+}
+function resetUI(){
+  for(const q of QUESTIONS){
+    const el = document.getElementById(`q_${q.question_id}`);
+    if(el) el.checked = false;
+    q._checked = false;
+  }
+  $("purposeTop").innerHTML = "";
+  $("categoryTop").innerHTML = "";
+  $("debug").textContent = "";
+  $("uiStatus").textContent = "リセットしました。";
+}
+function renderResults(purposeVector, catResults, debugObj){
+  // Purpose Top
+  const pTop = purposeTopList(purposeVector, 10);
+  const pWrap = $("purposeTop");
+  pWrap.innerHTML = "";
+
+  if(pTop.length === 0){
+    pWrap.innerHTML = `<div class="line">${pill("目的スコアがありません", "warn")}</div>`;
+  } else {
+    for(const [pid, sc] of pTop){
+      const parts = pid.split("_");
+      const div = document.createElement("div");
+      div.className = "line";
+      div.innerHTML = `
+        <div class="row between">
+          <div class="row">
+            ${pill(`${parts[1]}×${parts[2]}×${parts[3]}`)}
+            <span class="muted">${escapeHtml(pid)}</span>
+          </div>
+          ${pill(`score ${sc}`, "score")}
+        </div>
+      `;
+      pWrap.appendChild(div);
+    }
+  }
+
+  // Category Top
+  const cWrap = $("categoryTop");
+  cWrap.innerHTML = "";
+  if(catResults.length === 0){
+    cWrap.innerHTML = `<div class="line">${pill("該当食材がありません", "warn")}</div>`;
+  } else {
+    for(const c of catResults){
+      const box = document.createElement("div");
+      box.className = "line";
+
+      const rows = c.items.map(it => {
+        const contribTop = it.contrib
+          .sort((a,b)=> (a.priority-b.priority) || (b.add-a.add))
+          .slice(0,3)
+          .map(x => `${x.purpose_id.replace("P_","")}(${x.add})`)
+          .join(" / ");
+
+        const reason = it.contrib
+          .sort((a,b)=> (a.priority-b.priority) || (b.add-a.add))
+          .slice(0,2)
+          .map(x => x.rationale)
+          .filter(Boolean)
+          .join(" / ");
+
+        // 温度で薄色（カード背景）
+        const bgCls = tempBgClass(it.ingredient.temperature);
+        const marks = renderPropertyMarks(it.ingredient);
+
+        return `
+          <div class="ing-card ${bgCls}">
+            <div class="row between">
+              <div style="min-width:0;">
+                <div class="row">
+                  ${pill(`#${it.rank}`)}
+                  <strong>${escapeHtml(it.ingredient.name)}</strong>
+                </div>
+                <div class="muted" style="margin-top:4px;">${escapeHtml(contribTop)}</div>
+                ${reason ? `<div class="muted" style="margin-top:4px;">理由: ${escapeHtml(reason)}</div>` : ``}
+                ${marks}
+              </div>
+              <div>
+                ${pill(Number(it.score).toFixed(1), "score")}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      box.innerHTML = `
+        <div class="row between">
+          <div class="row">
+            ${pill(escapeHtml(c.category))}
+            <span class="muted">カテゴリ別Top</span>
+          </div>
+          ${pill(`Top${c.items.length}`)}
+        </div>
+        ${rows}
+      `;
+      cWrap.appendChild(box);
+    }
+  }
+
+  $("debug").textContent = JSON.stringify(debugObj, null, 2);
+}
+
+/** 正規化（列名揺れ吸収） */
+function normalizeIngredientRow(ing){
+  ing.ingredient_id = ing.ingredient_id || ing["Ingredient id"] || ing["id"] || "";
+  ing.name = ing.name || ing["Name"] || "";
+  ing.category = ing.category || ing["Category"] || "その他";
+  ing.temperature = ing.temperature || ing["Temperature"] || "";
+  ing.taste = ing.taste || ing["Taste"] || "";
+  ing.target_organs = ing.target_organs || ing.target_organ || ing["Target organ"] || "";
+  ing.element_action = ing.element_action || ing["Element action"] || "";
+  ing.role = ing.role || ing["Role"] || "";
+  ing.note = ing.note || ing["Note"] || "";
+  return ing;
+}
+function normalizeQuestionRow(q){
+  q.question_id = q.question_id || q["Question id"] || q["id"] || "";
+  q.question_text = q.question_text || q["Question text"] || "";
+  q.organ = q.organ || q["Organ"] || "";
+  q.element = q.element || q["Element"] || "";
+  q.state = q.state || q["State"] || "";
+  q.weight = q.weight || "1";
+  q.note = q.note || q["Note"] || "";
+  return q;
+}
+function normalizeMapRow(m){
+  m.purpose_id = m.purpose_id || "";
+  m.organ = m.organ || "";
+  m.element = m.element || "";
+  m.state = m.state || "";
+  m.ingredient_id = m.ingredient_id || "";
+  m.strength = m.strength || "1";
+  m.priority = m.priority || "999";
+  m.rationale = m.rationale || "";
+  return m;
+}
+
+/** Load */
+async function loadAll(){
+  $("loadStatus").textContent = "読み込み中…";
+  const [qTxt, iTxt, mTxt] = await Promise.all([
+    loadCSV(DATA.questions),
+    loadCSV(DATA.ingredients),
+    loadCSV(DATA.map),
+  ]);
+
+  QUESTIONS = rowsToObjects(parseCSV(qTxt)).map(normalizeQuestionRow);
+  INGREDIENTS = rowsToObjects(parseCSV(iTxt)).map(normalizeIngredientRow);
+  MAP = rowsToObjects(parseCSV(mTxt)).map(normalizeMapRow);
+
+  INGREDIENTS_BY_ID = new Map(INGREDIENTS.map(x => [x.ingredient_id, x]));
+  const missing = MAP.filter(m => !INGREDIENTS_BY_ID.has(m.ingredient_id)).length;
+
+  $("loadStatus").innerHTML = `
+    OK: questions=${QUESTIONS.length}, ingredients=${INGREDIENTS.length}, map=${MAP.length}
+    ${missing ? `<br>${pill(`mapに存在するがingredientsに無い ingredient_id が ${missing} 件あります`, "warn")}` : ``}
+  `;
+  renderQuestions();
+}
+
+/** Events */
+$("btnReload").addEventListener("click", async ()=>{
+  try{ await loadAll(); $("uiStatus").textContent = "CSVを再読み込みしました。"; }
+  catch(e){ console.error(e); $("uiStatus").textContent = `読み込み失敗: ${e.message}`; }
+});
+$("btnReset").addEventListener("click", resetUI);
+$("btnRecommend").addEventListener("click", ()=>{
+  syncChecked();
+  const checkedCount = QUESTIONS.filter(q=>q._checked).length;
+  if(checkedCount === 0){ $("uiStatus").textContent = "チェックが0件です。"; return; }
+
+  const minPurposeScore = Number($("minPurposeScore").value);
+  const topN = Number($("topN").value);
+  const topCategories = Number($("topCategories").value);
+
+  const purposeVector = buildPurposeVector();
+  const agg = scoreIngredients(purposeVector, minPurposeScore);
+  const catResults = rankByCategory(agg, topN, topCategories);
+
+  renderResults(
+    purposeVector,
+    catResults,
+    {
+      checkedCount,
+      purposeVectorTop: [...purposeVector.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10),
+      categoriesShown: catResults.map(x=>x.category),
+    }
+  );
+  $("uiStatus").textContent = "提案しました。";
+});
+
+loadAll().catch(e=>{
+  console.error(e);
+  $("loadStatus").textContent = `読み込み失敗: ${e.message}`;
+});
+</script>
+</body>
+</html>
