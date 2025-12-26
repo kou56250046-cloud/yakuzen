@@ -6,18 +6,27 @@
   <title>薬膳アプリ（チェック → 食材提案）</title>
   <style>
     :root{
-      --bg:#f6f7fb;
+      /* Green theme */
+      --bg1:#0b3b2a;
+      --bg2:#0f5a3a;
+      --bg3:#13824f;
+
       --panel:#ffffff;
-      --muted:#6b7280;
+      --panel2:#f6fff9;
       --text:#0f172a;
-      --border:#e5e7eb;
-      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      --shadow-sm: 0 6px 16px rgba(15, 23, 42, 0.08);
+      --muted:#64748b;
+      --border:rgba(15,23,42,.10);
 
-      --primary:#2563eb;
-      --primary-weak: rgba(37,99,235,.12);
+      --primary:#16a34a;
+      --primary2:#22c55e;
+      --primary-weak: rgba(34,197,94,.12);
 
-      --radius:16px;
+      --shadow: 0 16px 40px rgba(2, 12, 8, 0.22);
+      --shadow-sm: 0 10px 22px rgba(2, 12, 8, 0.18);
+
+      --radius:18px;
+      --radius2:22px;
+
       --font: system-ui, -apple-system, "Noto Sans JP", "Meiryo", sans-serif;
     }
 
@@ -25,142 +34,215 @@
     body{
       margin:0;
       font-family:var(--font);
-      background: radial-gradient(1200px 600px at 20% -10%, rgba(37,99,235,.10), transparent 60%),
-                  radial-gradient(900px 500px at 100% 10%, rgba(99,102,241,.10), transparent 55%),
-                  var(--bg);
       color:var(--text);
+      background:
+        radial-gradient(900px 520px at 20% 0%, rgba(34,197,94,.35), transparent 60%),
+        radial-gradient(800px 520px at 100% 0%, rgba(16,185,129,.28), transparent 55%),
+        linear-gradient(180deg, var(--bg2), var(--bg1) 55%, #06261a 100%);
+      min-height:100vh;
     }
 
-    /* Layout */
-    .app{ display:grid; grid-template-columns: 260px 1fr; min-height:100vh; }
-    @media (max-width: 980px){ .app{ grid-template-columns:1fr; } .sidebar{ position:sticky; top:0; z-index:5; } }
+    .wrap{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 14px 28px;
+    }
 
-    .sidebar{
-      background: rgba(255,255,255,.75);
+    .appShell{
+      border-radius: 26px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .topHeader{
+      padding: 18px 18px 14px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom: 1px solid rgba(255,255,255,.14);
       backdrop-filter: blur(10px);
-      border-right: 1px solid var(--border);
-      padding: 18px 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+      color:#eafff1;
     }
-    .brand{ display:flex; gap:10px; align-items:center; padding: 10px 10px 14px; }
-    .logo{ width:36px; height:36px; border-radius:12px; background: linear-gradient(135deg, var(--primary), #22c55e); box-shadow: var(--shadow-sm); }
-    .brand h1{ font-size:16px; margin:0; letter-spacing:.2px; }
-    .brand p{ margin:2px 0 0; font-size:12px; color:var(--muted); }
-
-    .nav{ margin-top: 8px; display:grid; gap:6px; padding: 0 6px; }
-    .nav .item{ display:flex; gap:10px; align-items:center; padding:10px 10px; border-radius: 12px; border: 1px solid transparent; cursor:pointer; user-select:none; }
-    .nav .item.active{ background: var(--primary-weak); border-color: rgba(37,99,235,.22); }
-    .nav .dot{ width:10px; height:10px; border-radius:999px; background: #cbd5e1; }
-    .nav .item.active .dot{ background: var(--primary); }
-    .nav span{ font-size:13px; color:#111827; }
-
-    .help{ margin-top: 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 14px; background: rgba(255,255,255,.9); }
-    .help .t{ font-size:12px; color:var(--muted); line-height:1.5; }
-
-    .main{ padding: 18px 18px 28px; }
-    .topbar{ display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 14px; }
-    .topbar .title h2{ margin:0; font-size:18px; }
-    .topbar .title p{ margin:4px 0 0; font-size:12px; color:var(--muted); }
-    .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-
-    /* Buttons / Inputs */
-    .btn{
-      border: 1px solid var(--border);
-      background: #fff;
-      color: #111827;
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 700;
-      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+    .brand{
+      display:flex; gap:10px; align-items:center;
     }
-    .btn.primary{
-      background: var(--primary);
-      color:#fff;
-      border-color: rgba(37,99,235,.35);
-      box-shadow: 0 10px 18px rgba(37,99,235,.18);
+    .logo{
+      width:40px; height:40px; border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary2), #a3e635);
+      box-shadow: var(--shadow-sm);
     }
+    .brand h1{ margin:0; font-size:16px; letter-spacing:.2px; }
+    .brand p{ margin:4px 0 0; font-size:12px; opacity:.85; }
 
-    .field{
-      display:flex; gap:8px; align-items:center;
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
       padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: rgba(255,255,255,.9);
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      font-size:12px;
+      color:#eafff1;
+      white-space:nowrap;
     }
-    .field label{ font-size:12px; color:var(--muted); }
-    select{ border:0; background: transparent; font-weight:700; color:#111827; outline:none; cursor:pointer; }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(255,255,255,.35);
+    }
+    .dot.on{ background: #a7f3d0; }
 
-    /* Content grid */
-    .grid{ display:grid; grid-template-columns: 1.25fr .75fr; gap: 14px; }
-    @media (max-width: 980px){ .grid{ grid-template-columns:1fr; } }
+    .content{
+      padding: 14px;
+      display:grid;
+      gap: 14px;
+    }
 
     .card{
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 14px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.6);
+      border-radius: var(--radius2);
+      box-shadow: 0 10px 26px rgba(2, 12, 8, 0.18);
+      overflow:hidden;
     }
-    .card h3{ margin: 0 0 10px; font-size:14px; }
-    .muted{ color: var(--muted); }
+    .cardHead{
+      padding: 14px 14px 10px;
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      align-items:flex-end;
+      background: linear-gradient(180deg, rgba(34,197,94,.10), rgba(255,255,255,0));
+      border-bottom: 1px solid rgba(15,23,42,.06);
+    }
+    .cardHead h2{
+      margin:0;
+      font-size:16px;
+      letter-spacing:.2px;
+    }
+    .cardHead p{
+      margin:6px 0 0;
+      font-size:12px;
+      color: var(--muted);
+    }
+
+    .cardBody{ padding: 12px 14px 14px; }
+
+    /* Buttons */
+    .btn{
+      appearance:none;
+      border: 1px solid rgba(15,23,42,.10);
+      background: #fff;
+      color: #0f172a;
+      padding: 11px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 800;
+      box-shadow: 0 2px 0 rgba(15, 23, 42, 0.03);
+    }
+    .btn.primary{
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color:#fff;
+      border-color: rgba(34,197,94,.35);
+      box-shadow: 0 14px 24px rgba(34,197,94,.24);
+    }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .bottomBar{
+      position: sticky;
+      bottom: 0;
+      padding: 12px 14px;
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      align-items:center;
+      background: rgba(255,255,255,.92);
+      border-top: 1px solid rgba(15,23,42,.06);
+      backdrop-filter: blur(10px);
+    }
+    @media (max-width: 700px){
+      .bottomBar{ justify-content:space-between; }
+      .btn{ width: 100%; }
+    }
 
     /* Question groups */
     .q-groups{ display:grid; gap:10px; }
-    .group{ border: 1px solid var(--border); border-radius: 14px; overflow:hidden; background: #fff; }
+    .group{
+      border: 1px solid rgba(15,23,42,.10);
+      border-radius: 16px;
+      overflow:hidden;
+      background: #fff;
+    }
     .group > button{
-      width:100%; text-align:left; padding: 12px 12px; border:0; background: #fff;
-      cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:800;
+      width:100%;
+      text-align:left;
+      padding: 12px 12px;
+      border:0;
+      background: linear-gradient(180deg, rgba(34,197,94,.09), rgba(255,255,255,1));
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-weight: 900;
     }
     .group > button span{ font-size:13px; }
-    .group > button small{ color: var(--muted); font-weight:700; }
-    .items{ padding: 10px 12px 12px; display:grid; gap: 10px; background: #fbfcff; border-top: 1px solid var(--border); }
-    .q-item{ display:flex; gap:10px; align-items:flex-start; padding: 10px 10px; border: 1px solid var(--border); border-radius: 14px; background: #fff; }
-    .q-item input{ margin-top:3px; }
+    .group > button small{ color: var(--muted); font-weight:800; }
+    .items{
+      padding: 10px 12px 12px;
+      display:grid;
+      gap: 10px;
+      background: #f6fff9;
+      border-top: 1px solid rgba(15,23,42,.06);
+    }
+    .q-item{
+      display:flex; gap:10px;
+      align-items:flex-start;
+      padding: 10px 10px;
+      border: 1px solid rgba(15,23,42,.10);
+      border-radius: 16px;
+      background: #fff;
+    }
+    .q-item input{ margin-top: 3px; transform: scale(1.1); accent-color: var(--primary); }
     .q-item .meta{ font-size:12px; color: var(--muted); margin-top:4px; }
 
-    /* Lists */
-    .list{ display:grid; gap:10px; }
-
-    /* 全体の枠（カテゴリブロック） */
-    .line{
-      border: 1px solid var(--border);
+    /* Result page */
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .between{ justify-content:space-between; }
+    .field{
+      display:flex; gap:8px; align-items:center;
+      padding: 8px 10px;
+      border: 1px solid rgba(15,23,42,.10);
       border-radius: 14px;
+      background: rgba(246,255,249,.95);
+    }
+    .field label{ font-size:12px; color: var(--muted); font-weight:800; }
+    select{ border:0; background: transparent; font-weight:900; color:#0f172a; outline:none; cursor:pointer; }
+
+    .list{ display:grid; gap:10px; }
+    .line{
+      border: 1px solid rgba(15,23,42,.10);
+      border-radius: 16px;
       padding: 12px;
       background:#fff;
     }
 
-    /* 食材カード（温度で薄色付け） */
-    .ing-card{
-      margin-top:10px;
-      padding: 12px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: #fff;
-    }
-
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .between{ justify-content:space-between; }
-
-    /* ==========
-       マーク（色つき）
-       ========== */
-    .marks{ margin-top:8px; display:flex; flex-wrap:wrap; gap:8px; }
-
+    /* ===== ピル（共通） ===== */
     .pill{
       display:inline-flex; align-items:center;
       padding: 4px 10px;
       border-radius: 999px;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(15,23,42,.10);
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 900;
       line-height: 1.2;
-      background: #f3f4f6;
-      color: #374151;
+      background: #f1f5f9;
+      color: #0f172a;
     }
     .pill.score{
-      background: rgba(37,99,235,.10);
-      border-color: rgba(37,99,235,.22);
-      color: #1d4ed8;
+      background: rgba(34,197,94,.14);
+      border-color: rgba(34,197,94,.30);
+      color:#166534;
     }
     .pill.warn{
       background: rgba(245,158,11,.12);
@@ -168,144 +250,123 @@
       color: #92400e;
     }
 
-    /* 温度 */
-    .t-寒{ background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.28); color:#1d4ed8; }
-    .t-涼{ background: rgba(14,165,233,.12); border-color: rgba(14,165,233,.28); color:#0369a1; }
-    .t-平{ background: rgba(107,114,128,.10); border-color: rgba(107,114,128,.24); color:#374151; }
-    .t-温{ background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.26); color:#92400e; }
-    .t-熱{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.26); color:#b91c1c; }
-
-    /* 五味 */
-    .s-酸{ background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.26); color:#15803d; }
-    .s-苦{ background: rgba(168,85,247,.12); border-color: rgba(168,85,247,.26); color:#6b21a8; }
-    .s-辛{ background: rgba(244,63,94,.12); border-color: rgba(244,63,94,.26); color:#be123c; }
-    .s-甘{ background: rgba(234,179,8,.14); border-color: rgba(234,179,8,.30); color:#854d0e; }
-    .s-鹹{ background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.26); color:#3730a3; }
-
-    /* 温度に応じた薄色（カード背景） */
-    .bg-寒{ background: linear-gradient(0deg, rgba(59,130,246,.07), rgba(255,255,255,1) 60%); }
-    .bg-涼{ background: linear-gradient(0deg, rgba(14,165,233,.07), rgba(255,255,255,1) 60%); }
-    .bg-平{ background: linear-gradient(0deg, rgba(107,114,128,.06), rgba(255,255,255,1) 60%); }
-    .bg-温{ background: linear-gradient(0deg, rgba(245,158,11,.08), rgba(255,255,255,1) 60%); }
-    .bg-熱{ background: linear-gradient(0deg, rgba(239,68,68,.07), rgba(255,255,255,1) 60%); }
-
-    details{ margin-top:10px; }
-    pre{
-      margin: 8px 0 0;
+    .ingCard{
+      margin-top:10px;
       padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #fbfcff;
-      color: #374151;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(15,23,42,.10);
+      background: linear-gradient(180deg, rgba(34,197,94,.08), #fff 55%);
     }
-    .footer-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; align-items:center; }
+    .ingCard h4{ margin:0; font-size:14px; }
+    .muted{ color: var(--muted); }
+    .divider{ height:1px; background: rgba(15,23,42,.08); margin: 10px 0; }
+
+    .hidden{ display:none !important; }
+
+    /* ===== 五性・五味 マーク表示 ===== */
+    .marks{ margin-top:8px; display:flex; flex-wrap:wrap; gap:8px; }
+
+    /* 五性：寒涼平温熱 */
+    .t-寒{ background: rgba(59,130,246,.14); border-color: rgba(59,130,246,.30); color:#1d4ed8; }
+    .t-涼{ background: rgba(14,165,233,.14); border-color: rgba(14,165,233,.30); color:#0369a1; }
+    .t-平{ background: rgba(107,114,128,.12); border-color: rgba(107,114,128,.26); color:#374151; }
+    .t-温{ background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.30); color:#92400e; }
+    .t-熱{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.30); color:#b91c1c; }
+
+    /* 五味：甘渋苦辛鹹 */
+    .s-甘{ background: rgba(234,179,8,.16); border-color: rgba(234,179,8,.32); color:#854d0e; }   /* 黄 */
+    .s-渋{ background: rgba(20,184,166,.14); border-color: rgba(20,184,166,.30); color:#0f766e; }  /* 青緑 */
+    .s-苦{ background: rgba(168,85,247,.14); border-color: rgba(168,85,247,.30); color:#6b21a8; }  /* 紫 */
+    .s-辛{ background: rgba(244,63,94,.14); border-color: rgba(244,63,94,.30); color:#be123c; }    /* 赤 */
+    .s-鹹{ background: rgba(99,102,241,.14); border-color: rgba(99,102,241,.30); color:#3730a3; }   /* 藍 */
   </style>
 </head>
 
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo"></div>
-      <div>
-        <h1>薬膳アプリ</h1>
-        <p>チェック → 食材提案</p>
-      </div>
-    </div>
-
-    <div class="nav">
-      <div class="item active"><div class="dot"></div><span>診断</span></div>
-      <div class="item"><div class="dot"></div><span>結果</span></div>
-      <div class="item"><div class="dot"></div><span>デバッグ</span></div>
-    </div>
-
-    <div class="help">
-      <div class="t">
-        CSV（questions / ingredients / purpose_ingredient_map）を読み込みます。<br>
-        ローカル直開きでは失敗する場合があります。<br>
-        GitHub Pages または Live Server を推奨します。
-      </div>
-    </div>
-  </aside>
-
-  <section class="main">
-    <div class="topbar">
-      <div class="title">
-        <h2>チェック項目</h2>
-        <p>該当する項目にチェックを入れて「提案する」を押してください。</p>
-      </div>
-      <div class="actions">
-        <button id="btnReload" class="btn">CSV再読み込み</button>
-        <button id="btnReset" class="btn">リセット</button>
-        <button id="btnRecommend" class="btn primary">提案する</button>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="row between" style="margin-bottom:10px;">
+  <div class="wrap">
+    <div class="appShell">
+      <div class="topHeader">
+        <div class="brand">
+          <div class="logo"></div>
           <div>
-            <h3 style="margin-bottom:4px;">体調チェック</h3>
-            <div id="loadStatus" class="muted">読み込み中…</div>
-          </div>
-
-          <div class="row">
-            <div class="field">
-              <label>表示カテゴリ数</label>
-              <select id="topCategories">
-                <option value="6" selected>6</option>
-                <option value="9">9</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>カテゴリ別TopN</label>
-              <select id="topN">
-                <option value="3" selected>3</option>
-                <option value="5">5</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>最低目的スコア</label>
-              <select id="minPurposeScore">
-                <option value="1" selected>1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-              </select>
-            </div>
+            <h1>薬膳アプリ</h1>
+            <p>チェック → 食材提案</p>
           </div>
         </div>
 
-        <div id="questionGroups" class="q-groups"></div>
-
-        <div class="footer-actions">
-          <span id="uiStatus" class="muted"></span>
+        <div class="badge" id="stepBadge">
+          <span class="dot on" id="dot1"></span><span>診断</span>
+          <span style="opacity:.5;">→</span>
+          <span class="dot" id="dot2"></span><span>結果</span>
         </div>
       </div>
 
-      <aside class="card">
-        <h3>結果</h3>
+      <div class="content">
+        <!-- =========================
+             第1画面：体調チェック
+             ========================= -->
+        <section class="card" id="screenCheck">
+          <div class="cardHead">
+            <div>
+              <h2>体調チェック項目</h2>
+              <p id="loadStatus">読み込み中…</p>
+            </div>
+            <div class="row">
+              <span class="pill" id="checkedCountPill">チェック 0</span>
+            </div>
+          </div>
 
-        <h3 style="margin-top:12px;">目的ベクトル Top</h3>
-        <div id="purposeTop" class="list"></div>
+          <div class="cardBody">
+            <div id="questionGroups" class="q-groups"></div>
+          </div>
 
-        <h3 style="margin-top:12px;">カテゴリ別 Top</h3>
-        <div id="categoryTop" class="list"></div>
+          <div class="bottomBar">
+            <button id="btnReset" class="btn">リセット</button>
+            <button id="btnRecommend" class="btn primary">提案する</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>デバッグ</summary>
-          <pre id="debug"></pre>
-        </details>
-      </aside>
+        <!-- =========================
+             第2画面：結果
+             ========================= -->
+        <section class="card hidden" id="screenResult">
+          <div class="cardHead">
+            <div>
+              <h2>結果</h2>
+              <p class="muted">カテゴリ別の提案食材と、目的ベクトルTopを表示します。</p>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label>カテゴリ TopN</label>
+                <select id="topN">
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </div>
+              <button id="btnBack" class="btn">診断へ戻る</button>
+            </div>
+          </div>
+
+          <div class="cardBody">
+            <h3 style="margin:0 0 10px; font-size:14px;">目的ベクトル Top</h3>
+            <div id="purposeTop" class="list"></div>
+
+            <div class="divider"></div>
+
+            <h3 style="margin:0 0 10px; font-size:14px;">カテゴリー別 提案食材</h3>
+            <div id="categoryTop" class="list"></div>
+
+            <div style="margin-top:12px;" class="muted" id="resultFooterNote"></div>
+          </div>
+        </section>
+      </div>
     </div>
-  </section>
-</div>
+  </div>
 
 <script>
 /** =========================
- *  CSVの配置パス
+ *  CSVパス
  *  ========================= */
 const DATA = {
   questions: "./questions.csv",
@@ -317,6 +378,11 @@ let QUESTIONS = [];
 let INGREDIENTS = [];
 let MAP = [];
 let INGREDIENTS_BY_ID = new Map();
+
+// purpose -> [{ingredient_id, strength, priority, rationale}]
+let MAP_BY_PURPOSE = new Map();
+// ingredient -> [{purpose_id, strength}]
+let VEC_BY_INGREDIENT = new Map();
 
 const $ = (id) => document.getElementById(id);
 
@@ -368,38 +434,40 @@ function escapeHtml(str){
     s === '"' ? "&quot;" : "&#39;"
   ));
 }
+function pill(text, cls=""){
+  return `<span class="pill ${cls}">${escapeHtml(text)}</span>`;
+}
 
-/** 文字→クラス */
+/** 五性：寒涼平温熱 */
 function tempClass(t){
   const v = (t||"").trim();
   if(["寒","涼","平","温","熱"].includes(v)) return `t-${v}`;
   return "warn";
 }
-function tempBgClass(t){
-  const v = (t||"").trim();
-  if(["寒","涼","平","温","熱"].includes(v)) return `bg-${v}`;
-  return "";
-}
+/** 五味：甘渋苦辛鹹 */
 function tasteClass(s){
   const v = (s||"").trim();
-  if(["酸","苦","辛","甘","鹹"].includes(v)) return `s-${v}`;
+  if(["甘","渋","苦","辛","鹹"].includes(v)) return `s-${v}`;
   return "";
 }
-function pill(text, cls=""){
-  return `<span class="pill ${cls}">${escapeHtml(text)}</span>`;
-}
-
-/** 温度・五味のマーク */
+/** 五性・五味のマーク（食材ごとに色付き表示） */
 function renderPropertyMarks(ing){
-  const temp = ing.temperature ? pill(ing.temperature, tempClass(ing.temperature)) : pill("温度?", "warn");
-  const tastes = splitList(ing.taste).length
-    ? splitList(ing.taste).map(t => pill(t, tasteClass(t))).join(" ")
+  const temp = ing.temperature
+    ? pill(ing.temperature, tempClass(ing.temperature))
+    : pill("五性?", "warn");
+
+  const tastesArr = splitList(ing.taste);
+  const tastes = tastesArr.length
+    ? tastesArr.map(t => pill(t, tasteClass(t))).join(" ")
     : pill("五味?", "warn");
+
   return `<div class="marks">${temp} ${tastes}</div>`;
 }
 
-/** ベクトル */
+/** 目的ID */
 function makePurposeId(organ, element, state){ return `P_${organ}_${element}_${state}`; }
+
+/** 目的ベクトル（u） */
 function buildPurposeVector(){
   const vector = new Map();
   const checkedQs = QUESTIONS.filter(q => q._checked);
@@ -410,60 +478,115 @@ function buildPurposeVector(){
   }
   return vector;
 }
+function normFromMap(vecMap){
+  let s = 0;
+  for(const v of vecMap.values()) s += v*v;
+  return Math.sqrt(s);
+}
 function purposeTopList(purposeVector, topK=10){
   return [...purposeVector.entries()].sort((a,b)=>b[1]-a[1]).slice(0, topK);
 }
-function scoreIngredients(purposeVector, minPurposeScore=1){
-  const vEntries = [...purposeVector.entries()].filter(([,s]) => s >= minPurposeScore);
-  const agg = new Map();
 
-  for(const [pid, pScore] of vEntries){
-    const rows = MAP.filter(m => m.purpose_id === pid);
-    for(const m of rows){
-      const iid = m.ingredient_id;
-      const strength = Number(m.strength || 1);
-      const add = pScore * strength;
-      if(!agg.has(iid)) agg.set(iid, { score:0, contrib:[] });
+/** map構造構築（purpose->rows, ingredient->vector） */
+function buildMapIndexes(){
+  MAP_BY_PURPOSE = new Map();
+  VEC_BY_INGREDIENT = new Map();
+
+  for(const m of MAP){
+    const pid = m.purpose_id;
+    const iid = m.ingredient_id;
+    const strength = Number(m.strength || 1);
+    const priority = Number(m.priority || 999);
+    const rationale = m.rationale || "";
+
+    if(!MAP_BY_PURPOSE.has(pid)) MAP_BY_PURPOSE.set(pid, []);
+    MAP_BY_PURPOSE.get(pid).push({ ingredient_id: iid, strength, priority, rationale });
+
+    if(!VEC_BY_INGREDIENT.has(iid)) VEC_BY_INGREDIENT.set(iid, []);
+    VEC_BY_INGREDIENT.get(iid).push({ purpose_id: pid, strength });
+  }
+
+  // priority順（説明の上位表示に効く）
+  for(const [pid, arr] of MAP_BY_PURPOSE.entries()){
+    arr.sort((a,b)=>a.priority-b.priority);
+  }
+}
+
+/** 食材スコア（内積＋コサイン類似のハイブリッド） */
+function scoreIngredientsHybrid(u){
+  const normU = normFromMap(u);
+  const agg = new Map(); // iid -> {dot, cos, final, contrib[]}
+  if(normU === 0) return { agg, normU };
+
+  // dot: uの次元から集計
+  for(const [pid, uVal] of u.entries()){
+    const rows = MAP_BY_PURPOSE.get(pid) || [];
+    for(const r of rows){
+      const iid = r.ingredient_id;
+      if(!agg.has(iid)) agg.set(iid, { dot:0, cos:0, final:0, contrib:[] });
+
       const obj = agg.get(iid);
-      obj.score += add;
+      const add = uVal * r.strength;
+      obj.dot += add;
       obj.contrib.push({
         purpose_id: pid,
-        purpose_score: pScore,
-        strength,
+        purpose_score: uVal,
+        strength: r.strength,
         add,
-        rationale: m.rationale || "",
-        priority: Number(m.priority || 999)
+        priority: r.priority,
+        rationale: r.rationale
       });
     }
   }
 
+  // cosine と final
   for(const [iid, obj] of agg.entries()){
-    const ing = INGREDIENTS_BY_ID.get(iid);
-    if(!ing) continue;
-    if(ing.role === "メイン") obj.score += 1;
+    const vec = VEC_BY_INGREDIENT.get(iid) || [];
+    let sumF2 = 0;
+    for(const it of vec){
+      const f = Number(it.strength || 0);
+      sumF2 += f*f;
+    }
+    const normF = Math.sqrt(sumF2);
+    const cos = (obj.dot > 0 && normF > 0) ? (obj.dot / (normU * normF)) : 0;
+
+    obj.cos = cos;
+    obj.final = obj.dot * cos;
   }
-  return agg;
-}
-function rankByCategory(ingredientAgg, topN=3, topCategories=6){
-  const byCat = new Map();
-  for(const [iid, obj] of ingredientAgg.entries()){
-    const ing = INGREDIENTS_BY_ID.get(iid);
-    if(!ing) continue;
-    const cat = ing.category || "その他";
-    if(!byCat.has(cat)) byCat.set(cat, []);
-    byCat.get(cat).push({ ingredient: ing, ...obj });
-  }
-  const catResults = [];
-  for(const [cat, arr] of byCat.entries()){
-    arr.sort((a,b)=> b.score - a.score);
-    const top = arr.slice(0, topN).map((x, idx)=>({ rank: idx+1, ...x }));
-    catResults.push({ category: cat, items: top });
-  }
-  catResults.sort((a,b)=> (b.items[0]?.score||0) - (a.items[0]?.score||0));
-  return catResults.slice(0, topCategories);
+
+  return { agg, normU };
 }
 
-/** UI */
+/** カテゴリごとに TopN（メイン/サポートは分けない） */
+function buildCategoryRanking(ingredientAgg, topN=3){
+  // category -> {items:[], bestScore:number}
+  const byCat = new Map();
+
+  for(const [iid, s] of ingredientAgg.entries()){
+    const ing = INGREDIENTS_BY_ID.get(iid);
+    if(!ing) continue;
+
+    const cat = ing.category || "その他";
+    if(!byCat.has(cat)) byCat.set(cat, { category: cat, items: [], bestScore: 0 });
+
+    byCat.get(cat).items.push({
+      ingredient: ing,
+      final: s.final,
+      contrib: s.contrib
+    });
+    byCat.get(cat).bestScore = Math.max(byCat.get(cat).bestScore, s.final);
+  }
+
+  const cats = [...byCat.values()];
+  for(const c of cats){
+    c.items.sort((a,b)=>b.final-a.final);
+    c.items = c.items.slice(0, topN).map((x, idx)=>({ rank: idx+1, ...x }));
+  }
+  cats.sort((a,b)=>b.bestScore-a.bestScore);
+  return cats;
+}
+
+/** UI：質問描画（noteでグルーピング） */
 function renderQuestions(){
   const groups = new Map();
   for(const q of QUESTIONS){
@@ -509,10 +632,14 @@ function renderQuestions(){
   }
 }
 function syncChecked(){
+  let n = 0;
   for(const q of QUESTIONS){
     const el = document.getElementById(`q_${q.question_id}`);
     q._checked = !!el?.checked;
+    if(q._checked) n++;
   }
+  $("checkedCountPill").innerHTML = `チェック ${n}`;
+  return n;
 }
 function resetUI(){
   for(const q of QUESTIONS){
@@ -520,17 +647,22 @@ function resetUI(){
     if(el) el.checked = false;
     q._checked = false;
   }
-  $("purposeTop").innerHTML = "";
-  $("categoryTop").innerHTML = "";
-  $("debug").textContent = "";
-  $("uiStatus").textContent = "リセットしました。";
+  $("checkedCountPill").innerHTML = `チェック 0`;
 }
-function renderResults(purposeVector, catResults, debugObj){
+
+/** 結果描画（第2画面） */
+let LAST_RESULT = null; // {u, agg}
+
+function renderResultScreen(){
+  if(!LAST_RESULT) return;
+
+  const topN = Number($("topN").value);
+  const { u, agg } = LAST_RESULT;
+
   // Purpose Top
-  const pTop = purposeTopList(purposeVector, 10);
+  const pTop = purposeTopList(u, 10);
   const pWrap = $("purposeTop");
   pWrap.innerHTML = "";
-
   if(pTop.length === 0){
     pWrap.innerHTML = `<div class="line">${pill("目的スコアがありません", "warn")}</div>`;
   } else {
@@ -551,48 +683,56 @@ function renderResults(purposeVector, catResults, debugObj){
     }
   }
 
-  // Category Top
+  // Category ranking (TopN)
+  const cats = buildCategoryRanking(agg, topN);
   const cWrap = $("categoryTop");
   cWrap.innerHTML = "";
-  if(catResults.length === 0){
+
+  if(cats.length === 0){
     cWrap.innerHTML = `<div class="line">${pill("該当食材がありません", "warn")}</div>`;
   } else {
-    for(const c of catResults){
+    for(const c of cats){
       const box = document.createElement("div");
       box.className = "line";
 
-      const rows = c.items.map(it => {
-        const contribTop = it.contrib
-          .sort((a,b)=> (a.priority-b.priority) || (b.add-a.add))
-          .slice(0,3)
-          .map(x => `${x.purpose_id.replace("P_","")}(${x.add})`)
-          .join(" / ");
+      const itemsHtml = (c.items || []).map(it => {
+        // ingredients側の詳細（note等）
+        const details = [
+          it.ingredient.note ? `note: ${it.ingredient.note}` : "",
+          it.ingredient.target_organs ? `対象: ${it.ingredient.target_organs}` : "",
+          it.ingredient.element_action ? `作用: ${it.ingredient.element_action}` : ""
+        ].filter(Boolean).join(" / ");
 
-        const reason = it.contrib
+        // map側の理由（rationale）上位2つ
+        const reason = (it.contrib || [])
+          .slice()
           .sort((a,b)=> (a.priority-b.priority) || (b.add-a.add))
-          .slice(0,2)
           .map(x => x.rationale)
           .filter(Boolean)
+          .slice(0,2)
           .join(" / ");
 
-        // 温度で薄色（カード背景）
-        const bgCls = tempBgClass(it.ingredient.temperature);
-        const marks = renderPropertyMarks(it.ingredient);
-
         return `
-          <div class="ing-card ${bgCls}">
+          <div class="ingCard">
             <div class="row between">
               <div style="min-width:0;">
                 <div class="row">
                   ${pill(`#${it.rank}`)}
-                  <strong>${escapeHtml(it.ingredient.name)}</strong>
+                  <h4>${escapeHtml(it.ingredient.name)}</h4>
                 </div>
-                <div class="muted" style="margin-top:4px;">${escapeHtml(contribTop)}</div>
-                ${reason ? `<div class="muted" style="margin-top:4px;">理由: ${escapeHtml(reason)}</div>` : ``}
-                ${marks}
+
+                ${details
+                  ? `<div class="muted" style="margin-top:6px;">${escapeHtml(details)}</div>`
+                  : `<div class="muted" style="margin-top:6px;">詳細:（未設定）</div>`}
+
+                ${reason ? `<div class="muted" style="margin-top:6px;">理由: ${escapeHtml(reason)}</div>` : ``}
+
+                <!-- ✅ 五性・五味（色付き表示） -->
+                ${renderPropertyMarks(it.ingredient)}
               </div>
+
               <div>
-                ${pill(Number(it.score).toFixed(1), "score")}
+                ${pill(it.final.toFixed(2), "score")}
               </div>
             </div>
           </div>
@@ -603,17 +743,29 @@ function renderResults(purposeVector, catResults, debugObj){
         <div class="row between">
           <div class="row">
             ${pill(escapeHtml(c.category))}
-            <span class="muted">カテゴリ別Top</span>
+            <span class="muted">best=${c.bestScore.toFixed(2)}</span>
           </div>
-          ${pill(`Top${c.items.length}`)}
+          ${pill(`TopN=${topN}`)}
         </div>
-        ${rows}
+        ${itemsHtml || `<div class="muted" style="margin-top:10px;">該当なし</div>`}
       `;
+
       cWrap.appendChild(box);
     }
   }
 
-  $("debug").textContent = JSON.stringify(debugObj, null, 2);
+  $("resultFooterNote").textContent =
+    "※スコアは「内積×コサイン類似度」のハイブリッド最終スコアです（内積/コサインの個別値は非表示）。";
+}
+
+/** 画面遷移 */
+function goTo(step){
+  const isResult = (step === 2);
+  $("screenCheck").classList.toggle("hidden", isResult);
+  $("screenResult").classList.toggle("hidden", !isResult);
+
+  $("dot1").classList.toggle("on", !isResult);
+  $("dot2").classList.toggle("on", isResult);
 }
 
 /** 正規化（列名揺れ吸収） */
@@ -621,11 +773,14 @@ function normalizeIngredientRow(ing){
   ing.ingredient_id = ing.ingredient_id || ing["Ingredient id"] || ing["id"] || "";
   ing.name = ing.name || ing["Name"] || "";
   ing.category = ing.category || ing["Category"] || "その他";
+
+  // 五性（temperature） / 五味（taste）
   ing.temperature = ing.temperature || ing["Temperature"] || "";
   ing.taste = ing.taste || ing["Taste"] || "";
+
   ing.target_organs = ing.target_organs || ing.target_organ || ing["Target organ"] || "";
   ing.element_action = ing.element_action || ing["Element action"] || "";
-  ing.role = ing.role || ing["Role"] || "";
+  ing.role = ing.role || ing["Role"] || ""; // 使わないが列は保持
   ing.note = ing.note || ing["Note"] || "";
   return ing;
 }
@@ -641,9 +796,6 @@ function normalizeQuestionRow(q){
 }
 function normalizeMapRow(m){
   m.purpose_id = m.purpose_id || "";
-  m.organ = m.organ || "";
-  m.element = m.element || "";
-  m.state = m.state || "";
   m.ingredient_id = m.ingredient_id || "";
   m.strength = m.strength || "1";
   m.priority = m.priority || "999";
@@ -653,7 +805,7 @@ function normalizeMapRow(m){
 
 /** Load */
 async function loadAll(){
-  $("loadStatus").textContent = "読み込み中…";
+  $("loadStatus").textContent = "CSVを読み込み中…";
   const [qTxt, iTxt, mTxt] = await Promise.all([
     loadCSV(DATA.questions),
     loadCSV(DATA.ingredients),
@@ -665,49 +817,55 @@ async function loadAll(){
   MAP = rowsToObjects(parseCSV(mTxt)).map(normalizeMapRow);
 
   INGREDIENTS_BY_ID = new Map(INGREDIENTS.map(x => [x.ingredient_id, x]));
-  const missing = MAP.filter(m => !INGREDIENTS_BY_ID.has(m.ingredient_id)).length;
+  buildMapIndexes();
 
-  $("loadStatus").innerHTML = `
-    OK: questions=${QUESTIONS.length}, ingredients=${INGREDIENTS.length}, map=${MAP.length}
-    ${missing ? `<br>${pill(`mapに存在するがingredientsに無い ingredient_id が ${missing} 件あります`, "warn")}` : ``}
-  `;
+  const missing = MAP.filter(m => !INGREDIENTS_BY_ID.has(m.ingredient_id)).length;
+  $("loadStatus").innerHTML =
+    `OK: questions=${QUESTIONS.length}, ingredients=${INGREDIENTS.length}, map=${MAP.length}` +
+    (missing ? ` / <span style="color:#b45309;font-weight:900;">mapに存在するがingredientsに無い ingredient_id が ${missing} 件</span>` : ``);
+
   renderQuestions();
 }
 
 /** Events */
-$("btnReload").addEventListener("click", async ()=>{
-  try{ await loadAll(); $("uiStatus").textContent = "CSVを再読み込みしました。"; }
-  catch(e){ console.error(e); $("uiStatus").textContent = `読み込み失敗: ${e.message}`; }
+$("btnReset").addEventListener("click", ()=>{
+  resetUI();
 });
-$("btnReset").addEventListener("click", resetUI);
+
 $("btnRecommend").addEventListener("click", ()=>{
-  syncChecked();
-  const checkedCount = QUESTIONS.filter(q=>q._checked).length;
-  if(checkedCount === 0){ $("uiStatus").textContent = "チェックが0件です。"; return; }
+  const checkedCount = syncChecked();
+  if(checkedCount === 0){
+    alert("チェックが0件です。1つ以上選択してください。");
+    return;
+  }
 
-  const minPurposeScore = Number($("minPurposeScore").value);
-  const topN = Number($("topN").value);
-  const topCategories = Number($("topCategories").value);
+  const u = buildPurposeVector();
+  const { agg } = scoreIngredientsHybrid(u);
 
-  const purposeVector = buildPurposeVector();
-  const agg = scoreIngredients(purposeVector, minPurposeScore);
-  const catResults = rankByCategory(agg, topN, topCategories);
+  LAST_RESULT = { u, agg };
 
-  renderResults(
-    purposeVector,
-    catResults,
-    {
-      checkedCount,
-      purposeVectorTop: [...purposeVector.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10),
-      categoriesShown: catResults.map(x=>x.category),
-    }
-  );
-  $("uiStatus").textContent = "提案しました。";
+  renderResultScreen();
+  goTo(2);
+});
+
+$("btnBack").addEventListener("click", ()=>{
+  goTo(1);
+});
+
+$("topN").addEventListener("change", ()=>{
+  renderResultScreen();
 });
 
 loadAll().catch(e=>{
   console.error(e);
   $("loadStatus").textContent = `読み込み失敗: ${e.message}`;
+});
+
+/* 第1画面のチェック数ピルをリアルタイム更新（任意） */
+document.addEventListener("change", (ev)=>{
+  if(ev.target && ev.target.type === "checkbox" && String(ev.target.id||"").startsWith("q_")){
+    syncChecked();
+  }
 });
 </script>
 </body>
